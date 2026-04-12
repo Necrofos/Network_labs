@@ -1,6 +1,7 @@
 #include "tcp_client.hpp"
 #include <iostream>
 #include <stdexcept>
+#include <cstring>
 #include <sys/select.h>
 #include <unistd.h>
 
@@ -84,7 +85,7 @@ void TcpClient::eventLoop()
         if (r < 0)
         {
             if (errno == EINTR) continue;
-            throw SysError("select");
+            throw std::runtime_error(std::string("select: ") + std::strerror(errno));
         }
 
         if (FD_ISSET(sfd, &rfds))

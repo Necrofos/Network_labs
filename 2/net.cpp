@@ -37,7 +37,7 @@ void TcpSocket::shutdownBoth()
 TcpSocket TcpSocket::create()
 {
     int fd = ::socket(AF_INET, SOCK_STREAM, 0);
-    if (fd < 0) throw SysError("socket");
+    if (fd < 0) throw std::runtime_error(std::string("socket: ") + std::strerror(errno));
     return TcpSocket(fd);
 }
 
@@ -55,13 +55,13 @@ void TcpSocket::bindAny(std::uint16_t port)
     addr.sin_port = htons(port);
 
     if (::bind(fd_, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) < 0)
-        throw SysError("bind");
+        throw std::runtime_error(std::string("bind: ") + std::strerror(errno));
 }
 
 void TcpSocket::listen(int backlog)
 {
     if (::listen(fd_, backlog) < 0)
-        throw SysError("listen");
+        throw std::runtime_error(std::string("listen: ") + std::strerror(errno));
 }
 
 TcpSocket TcpSocket::accept(sockaddr_in* outAddr)
@@ -69,7 +69,7 @@ TcpSocket TcpSocket::accept(sockaddr_in* outAddr)
     sockaddr_in caddr{};
     socklen_t clen = sizeof(caddr);
     int cfd = ::accept(fd_, reinterpret_cast<sockaddr*>(&caddr), &clen);
-    if (cfd < 0) throw SysError("accept");
+    if (cfd < 0) throw std::runtime_error(std::string("accept: ") + std::strerror(errno));
     if (outAddr) *outAddr = caddr;
     return TcpSocket(cfd);
 }
@@ -84,7 +84,7 @@ void TcpSocket::connectTo(const std::string& hostIp, std::uint16_t port)
         throw std::runtime_error("Bad host ip");
 
     if (::connect(fd_, reinterpret_cast<sockaddr*>(&srv), sizeof(srv)) < 0)
-        throw SysError("connect");
+        throw std::runtime_error(std::string("connect: ") + std::strerror(errno));
 }
 
 void TcpSocket::sendAll(const void* data, std::size_t n)
@@ -97,7 +97,7 @@ void TcpSocket::sendAll(const void* data, std::size_t n)
         if (s < 0)
         {
             if (errno == EINTR) continue;
-            throw SysError("send");
+            throw std::runtime_error(std::string("send: ") + std::strerror(errno));
         }
         sent += static_cast<std::size_t>(s);
     }
@@ -114,7 +114,7 @@ bool TcpSocket::recvAll(void* data, std::size_t n)
         if (r < 0)
         {
             if (errno == EINTR) continue;
-            throw SysError("recv");
+            throw std::runtime_error(std::string("recv: ") + std::strerror(errno));
         }
         got += static_cast<std::size_t>(r);
     }

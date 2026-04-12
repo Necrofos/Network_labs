@@ -12,13 +12,6 @@
 
 #include "protocol.hpp"
 
-class SysError : public std::runtime_error
-{
-public:
-    explicit SysError(const std::string& what)
-        : std::runtime_error(what + ": " + std::string(std::strerror(errno))) {}
-};
-
 class TcpSocket
 {
     int fd_{-1};
